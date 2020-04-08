@@ -1,0 +1,100 @@
+grammar Calculator;
+
+@header \{
+    import java.lang.Integer.parseInt
+\}
+
+@members \{
+    private fun factorial(n: Int): Int {
+        return when {
+            n > 1 -> n * factorial(n - 1)
+            else -> 1
+        }
+    }
+\}
+
+s :
+    expr \{
+        println(expr.result$);
+    \}
+    ;
+
+expr returns [int result] :
+    term exprP\[term.result\] \{
+        result$ = exprP.result$;
+    \}
+    ;
+
+exprP[int i] returns [int result] :
+    EPS \{
+        result$ = i$
+    \}
+    |
+    PLUS term exprP\[i + term.result\] \{
+        result$ = exprP.result$;
+    \}
+    |
+    MINUS term exprP\[i - term.result\] \{
+        result$ = exprP.result$;
+    \}
+    ;
+
+term returns [int result] :
+    fact termP\[fact.result\] \{
+        result$ = termP.result$;
+    \}
+    ;
+
+termP[int i] returns [int result] :
+    EPS \{
+        result$ = i$
+    \}
+    |
+    TIMES fact termP\[i * fact.result\] \{
+        result$ = termP.result$;
+    \}
+    |
+    DIV fact termP\[i / fact.result\] \{
+        result$ = termP.result$;
+    \}
+    ;
+
+fact returns [int result] :
+    MINUS atom \{
+        result$ = -atom.result$;
+    \}
+    |
+    atom factP\[atom.result\] \{
+        result$ = factP.result$
+    \}
+    ;
+
+factP[int i] returns [int result] :
+    EPS \{
+        result$ = i$;
+    \}
+    |
+    FACTORIAL factP\[i\] \{
+        result$ = factorial(factP.result$)
+    \}
+    ;
+
+atom returns[int result] :
+    LPAREN expr RPAREN \{
+        result$ = expr.result$
+    \}
+    |
+    NUMBER \{
+        result$ = parseInt(NUMBER.text$)
+    \}
+    ;
+
+
+LPAREN : '\\(';
+RPAREN : '\\)';
+PLUS : '\\+';
+MINUS : '\\-';
+TIMES : '\\*';
+DIV : '\\/';
+FACTORIAL : '\\!';
+NUMBER : '[1-9][0-9]*';
