@@ -1,0 +1,1 @@
+class string(var value: String = "")
